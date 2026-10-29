@@ -2,7 +2,7 @@
 mod types;
 mod vault;
 
-use soroban_sdk::{contract, contractevent, contractimpl, Address, BytesN, Env, Event};
+use soroban_sdk::{contract, contractevent, contractimpl, Address, BytesN, Env};
 use types::{validate_terms, DataKey, Warranty, WarrantyStatus};
 
 #[contract]
