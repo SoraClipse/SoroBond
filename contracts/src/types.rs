@@ -45,7 +45,10 @@ pub fn validate_terms(
     duration: u64,
 ) {
     assert!(seller != buyer, "seller and buyer must be distinct");
-    assert!(arbitrator != seller && arbitrator != buyer, "arbitrator must be independent");
+    assert!(
+        arbitrator != seller && arbitrator != buyer,
+        "arbitrator must be independent"
+    );
     assert!(amount > 0, "bond must be positive");
     assert!(
         (MIN_DURATION..=MAX_DURATION).contains(&duration),
