@@ -10,5 +10,9 @@ pub fn deposit_exact(env: &Env, asset: &Address, seller: &Address, amount: i128)
     let before = client.balance(&contract);
     client.transfer(seller, &contract, &amount);
     let after = client.balance(&contract);
-    assert_eq!(after.checked_sub(before), Some(amount), "token deposit mismatch");
+    assert_eq!(
+        after.checked_sub(before),
+        Some(amount),
+        "token deposit mismatch"
+    );
 }
