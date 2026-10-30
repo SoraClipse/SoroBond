@@ -1,6 +1,6 @@
 use soroban_sdk::{contracttype, Address, BytesN};
 
-/// Persistent V1 agreement. No personal item details are stored on the ledger.
+/// Versioned immutable agreement fields plus monotonic on-chain lifecycle state.
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Warranty {
@@ -12,16 +12,32 @@ pub struct Warranty {
     pub token: Address,
     pub bond_amount: i128,
     pub created_at: u64,
+    pub offer_expires_at: u64,
+    pub duration_seconds: u64,
+    pub activated_at: u64,
     pub expires_at: u64,
     pub terms_hash: BytesN<32>,
+    pub seller_approved: bool,
+    pub buyer_approved: bool,
     pub status: WarrantyStatus,
 }
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Claim {
+    pub warranty_id: u64,
+    pub amount: i128,
+    pub evidence_hash: BytesN<32>,
+    pub filed_at: u64,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum WarrantyStatus {
+    Pending,
     Active,
-    // Claims and settlement are intentionally not implemented in this milestone.
+    Claimed,
+    Settled,
 }
 
 #[contracttype]
@@ -32,10 +48,12 @@ pub enum DataKey {
     LockedTotal,
     Depositing,
     Warranty(u64),
+    Claim(u64),
 }
 
 pub const MIN_DURATION: u64 = 60 * 60;
 pub const MAX_DURATION: u64 = 90 * 24 * 60 * 60;
+pub const OFFER_VALIDITY: u64 = 24 * 60 * 60;
 
 pub fn validate_terms(
     seller: &Address,
