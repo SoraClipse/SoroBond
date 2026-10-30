@@ -32,9 +32,7 @@ pub fn submit(env: &Env, id: u64, buyer: Address, amount: i128, evidence_hash: B
         filed_at: now,
     };
     warranty.status = WarrantyStatus::Claimed;
-    env.storage()
-        .persistent()
-        .set(&DataKey::Claim(id), &claim);
+    env.storage().persistent().set(&DataKey::Claim(id), &claim);
     env.storage()
         .persistent()
         .set(&DataKey::Warranty(id), &warranty);

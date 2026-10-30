@@ -6,8 +6,12 @@ use soroban_sdk::{
 
 fn claimed() -> (Env, Address, Address, Address, Address, u64) {
     let (env, contract, seller, buyer, _, asset, id, _) = active();
-    SoroBondClient::new(&env, &contract)
-        .submit_claim(&id, &buyer, &180, &BytesN::from_array(&env, &[9_u8; 32]));
+    SoroBondClient::new(&env, &contract).submit_claim(
+        &id,
+        &buyer,
+        &180,
+        &BytesN::from_array(&env, &[9_u8; 32]),
+    );
     (env, contract, seller, buyer, asset, id)
 }
 

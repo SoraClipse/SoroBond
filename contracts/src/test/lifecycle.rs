@@ -1,5 +1,8 @@
 use super::*;
-use soroban_sdk::{testutils::{Events as _, Ledger as _}, Event as _};
+use soroban_sdk::{
+    testutils::{Events as _, Ledger as _},
+    Event as _,
+};
 
 #[test]
 fn activation_requires_both_approvals_and_publishes_once() {

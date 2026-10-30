@@ -30,10 +30,7 @@ pub fn approve(
         "offer expired"
     );
     assert_eq!(warranty.terms_hash, expected_terms_hash, "terms mismatch");
-    assert_eq!(
-        warranty.bond_amount, expected_bond_amount,
-        "bond mismatch"
-    );
+    assert_eq!(warranty.bond_amount, expected_bond_amount, "bond mismatch");
     assert_eq!(
         warranty.duration_seconds, expected_duration_seconds,
         "duration mismatch"
@@ -42,7 +39,10 @@ pub fn approve(
         warranty.offer_expires_at, expected_offer_expires_at,
         "offer deadline mismatch"
     );
-    assert_eq!(warranty.arbitrator, expected_arbitrator, "arbitrator mismatch");
+    assert_eq!(
+        warranty.arbitrator, expected_arbitrator,
+        "arbitrator mismatch"
+    );
     assert!(
         signer == warranty.seller || signer == warranty.buyer,
         "not a participant"

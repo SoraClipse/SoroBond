@@ -24,7 +24,16 @@ fn fixture() -> (Env, Address, Address, Address, Address, Address) {
     (env, contract_id, seller, buyer, resolver, token_id)
 }
 
-fn pending() -> (Env, Address, Address, Address, Address, Address, u64, BytesN<32>) {
+fn pending() -> (
+    Env,
+    Address,
+    Address,
+    Address,
+    Address,
+    Address,
+    u64,
+    BytesN<32>,
+) {
     let (env, contract, seller, buyer, resolver, asset) = fixture();
     env.mock_all_auths();
     let hash = BytesN::from_array(&env, &[42_u8; 32]);
@@ -52,7 +61,16 @@ fn approve_party(
     )
 }
 
-fn active() -> (Env, Address, Address, Address, Address, Address, u64, BytesN<32>) {
+fn active() -> (
+    Env,
+    Address,
+    Address,
+    Address,
+    Address,
+    Address,
+    u64,
+    BytesN<32>,
+) {
     let (env, contract, seller, buyer, resolver, asset, id, hash) = pending();
     assert!(approve_party(&env, &contract, id, &seller, &hash));
     assert!(approve_party(&env, &contract, id, &buyer, &hash));
@@ -92,15 +110,27 @@ fn invalid_deposit_does_not_move_tokens() {
     let hash = BytesN::from_array(&env, &[17_u8; 32]);
     let zero = BytesN::from_array(&env, &[0_u8; 32]);
     let client = SoroBondClient::new(&env, &contract);
-    assert!(client.try_create(&seller, &buyer, &resolver, &0, &3600, &hash).is_err());
-    assert!(client.try_create(&seller, &seller, &resolver, &1, &3600, &hash).is_err());
-    assert!(client.try_create(&seller, &buyer, &seller, &1, &3600, &hash).is_err());
-    assert!(client.try_create(&seller, &buyer, &resolver, &1, &1, &hash).is_err());
+    assert!(client
+        .try_create(&seller, &buyer, &resolver, &0, &3600, &hash)
+        .is_err());
+    assert!(client
+        .try_create(&seller, &seller, &resolver, &1, &3600, &hash)
+        .is_err());
+    assert!(client
+        .try_create(&seller, &buyer, &seller, &1, &3600, &hash)
+        .is_err());
+    assert!(client
+        .try_create(&seller, &buyer, &resolver, &1, &1, &hash)
+        .is_err());
     assert!(client
         .try_create(&seller, &buyer, &resolver, &1, &(90 * 86400 + 1), &hash)
         .is_err());
-    assert!(client.try_create(&seller, &buyer, &resolver, &2_000, &3600, &hash).is_err());
-    assert!(client.try_create(&seller, &buyer, &resolver, &1, &3600, &zero).is_err());
+    assert!(client
+        .try_create(&seller, &buyer, &resolver, &2_000, &3600, &hash)
+        .is_err());
+    assert!(client
+        .try_create(&seller, &buyer, &resolver, &1, &3600, &zero)
+        .is_err());
     assert_eq!(TokenClient::new(&env, &asset).balance(&contract), 0);
     assert_eq!(client.locked_total(), 0);
     assert!(client.get(&1).is_none());

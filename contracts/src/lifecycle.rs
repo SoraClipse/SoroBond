@@ -29,8 +29,8 @@ pub fn activate(env: &Env, id: u64) -> bool {
         .get(&DataKey::LockedTotal)
         .unwrap_or(0);
     assert!(locked >= warranty.bond_amount, "bond not reserved");
-    let vault_balance = token::Client::new(env, &warranty.token)
-        .balance(&env.current_contract_address());
+    let vault_balance =
+        token::Client::new(env, &warranty.token).balance(&env.current_contract_address());
     assert!(vault_balance >= locked, "bond not fully funded");
     warranty.activated_at = now;
     warranty.expires_at = now
