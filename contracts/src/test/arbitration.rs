@@ -28,12 +28,7 @@ fn preselected_arbitrator_awards_only_claimed_amount_once() {
 fn fake_arbitrator_cannot_release_any_tokens() {
     let (env, contract, _, buyer, resolver, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);
-    client.submit_claim(
-        &id,
-        &buyer,
-        &80,
-        &BytesN::from_array(&env, &[8_u8; 32]),
-    );
+    client.submit_claim(&id, &buyer, &80, &BytesN::from_array(&env, &[8_u8; 32]));
     let outsider = Address::generate(&env);
     let auth = [MockAuth {
         address: &outsider,
@@ -55,12 +50,7 @@ fn fake_arbitrator_cannot_release_any_tokens() {
 fn failed_arbitration_transfer_preserves_open_claim_and_liability() {
     let (env, contract, seller, buyer, _, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);
-    client.submit_claim(
-        &id,
-        &buyer,
-        &100,
-        &BytesN::from_array(&env, &[16_u8; 32]),
-    );
+    client.submit_claim(&id, &buyer, &100, &BytesN::from_array(&env, &[16_u8; 32]));
     let token = TokenClient::new(&env, &asset);
     let outsider = Address::generate(&env);
     token.transfer(&contract, &outsider, &250);
@@ -78,12 +68,7 @@ fn failed_arbitration_transfer_preserves_open_claim_and_liability() {
 fn zero_award_and_arbitration_after_mutual_settlement_are_terminal() {
     let (env, contract, seller, buyer, _, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);
-    client.submit_claim(
-        &id,
-        &buyer,
-        &10,
-        &BytesN::from_array(&env, &[10_u8; 32]),
-    );
+    client.submit_claim(&id, &buyer, &10, &BytesN::from_array(&env, &[10_u8; 32]));
     client.arbitrate(&id, &0);
     assert_eq!(TokenClient::new(&env, &asset).balance(&seller), 1_000);
     assert_eq!(client.locked_total(), 0);
@@ -91,12 +76,7 @@ fn zero_award_and_arbitration_after_mutual_settlement_are_terminal() {
 
     let (env, contract, _, buyer, _, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);
-    client.submit_claim(
-        &id,
-        &buyer,
-        &50,
-        &BytesN::from_array(&env, &[11_u8; 32]),
-    );
+    client.submit_claim(&id, &buyer, &50, &BytesN::from_array(&env, &[11_u8; 32]));
     client.settle(&id, &10);
     assert!(client.try_arbitrate(&id, &10).is_err());
     assert_eq!(TokenClient::new(&env, &asset).balance(&contract), 0);

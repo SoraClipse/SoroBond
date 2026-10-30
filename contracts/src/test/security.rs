@@ -33,7 +33,8 @@ fn caller_without_seller_authorization_cannot_withdraw_expired_bond() {
     let (env, contract, seller, _, _, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);
     let deadline = client.get(&id).unwrap().expires_at + types::EXPIRY_GRACE;
-    env.ledger().with_mut(|ledger| ledger.timestamp = deadline + 1);
+    env.ledger()
+        .with_mut(|ledger| ledger.timestamp = deadline + 1);
     let outsider = Address::generate(&env);
     let auth = [MockAuth {
         address: &outsider,
@@ -44,10 +45,7 @@ fn caller_without_seller_authorization_cannot_withdraw_expired_bond() {
             sub_invokes: &[],
         },
     }];
-    assert!(client
-        .mock_auths(&auth)
-        .try_withdraw_expired(&id)
-        .is_err());
+    assert!(client.mock_auths(&auth).try_withdraw_expired(&id).is_err());
     assert_eq!(client.get(&id).unwrap().seller, seller);
     assert_eq!(client.get(&id).unwrap().status, WarrantyStatus::Active);
     assert_eq!(client.locked_total(), 250);
@@ -58,12 +56,7 @@ fn caller_without_seller_authorization_cannot_withdraw_expired_bond() {
 fn malicious_and_overflow_awards_revert_without_balance_or_state_changes() {
     let (env, contract, _, buyer, _, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);
-    client.submit_claim(
-        &id,
-        &buyer,
-        &20,
-        &BytesN::from_array(&env, &[22_u8; 32]),
-    );
+    client.submit_claim(&id, &buyer, &20, &BytesN::from_array(&env, &[22_u8; 32]));
     for wrong in [-1_i128, 21_i128, i128::MAX] {
         assert!(client.try_arbitrate(&id, &wrong).is_err());
         assert!(client.try_settle(&id, &wrong).is_err());
