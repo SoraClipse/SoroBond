@@ -52,6 +52,29 @@ fn fake_arbitrator_cannot_release_any_tokens() {
 }
 
 #[test]
+fn failed_arbitration_transfer_preserves_open_claim_and_liability() {
+    let (env, contract, seller, buyer, _, asset, id, _) = active();
+    let client = SoroBondClient::new(&env, &contract);
+    client.submit_claim(
+        &id,
+        &buyer,
+        &100,
+        &BytesN::from_array(&env, &[16_u8; 32]),
+    );
+    let token = TokenClient::new(&env, &asset);
+    let outsider = Address::generate(&env);
+    token.transfer(&contract, &outsider, &250);
+    assert!(client.try_arbitrate(&id, &50).is_err());
+    assert_eq!(client.get(&id).unwrap().status, WarrantyStatus::Claimed);
+    assert_eq!(client.locked_total(), 250);
+    assert_eq!(token.balance(&buyer), 0);
+    token.transfer(&seller, &contract, &250);
+    client.arbitrate(&id, &50);
+    assert_eq!(client.get(&id).unwrap().status, WarrantyStatus::Settled);
+    assert_eq!(client.locked_total(), 0);
+}
+
+#[test]
 fn zero_award_and_arbitration_after_mutual_settlement_are_terminal() {
     let (env, contract, seller, buyer, _, asset, id, _) = active();
     let client = SoroBondClient::new(&env, &contract);

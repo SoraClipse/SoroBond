@@ -46,7 +46,7 @@ pub fn finalize(
     warranty.status = terminal;
     env.storage()
         .persistent()
-        .set(&DataKey::Warranty(warranty.id), warranty);
+        .set(&DataKey::Warranty(warranty.id), &*warranty);
     env.storage()
         .instance()
         .set(&DataKey::LockedTotal, &remaining);
