@@ -28,7 +28,8 @@ fn seeded_state_sequences_preserve_global_conservation_and_terminal_finality() {
             let expiry = client.get(&id).unwrap().expires_at + types::EXPIRY_GRACE;
             env.ledger().with_mut(|ledger| ledger.timestamp = expiry);
             assert!(client.try_withdraw_expired(&id).is_err());
-            env.ledger().with_mut(|ledger| ledger.timestamp = expiry + 1);
+            env.ledger()
+                .with_mut(|ledger| ledger.timestamp = expiry + 1);
             client.withdraw_expired(&id);
         }
 
