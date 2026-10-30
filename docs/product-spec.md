@@ -1,41 +1,34 @@
-# SoroBond V1 — limited warranty bond protocol
+# SoroBond V1 — experimental warranty bond lifecycle
 
-**Scope of Issues #1–#4:** Soroban Rust package, immutable versioned agreement model, authorized **deposit only**, asset allow-list pinned in constructor, accounting and event emission. Claims, dispute evidence, resolution and withdrawal **are not yet implemented**. Contract must not be deployed with valuable assets while there is no withdrawal path and no review of the full lifecycle.
+**Implementation through issues #1–#8:** Soroban Rust contract, exact allow-listed token deposits, versioned agreement, mutual consent, funded activation, buyer claim freeze and exact mutually authorized settlement. This is not an insured sale, arbitration service, physical-defect oracle or independently reviewed product.
 
-## Participants and legal boundaries
+## Roles and assumptions
 
-- Seller: agrees to lock an exact quantity of a configured Stellar asset to support a limited warranty. Only the seller can authorize its deposit.
-- Buyer: identified counterparty to the specific agreement, not automatically entitled to all of the sale price.
-- Independent arbitrator: chosen before depositing, cannot equal either party. A human or external system must decide whether goods are defective; the blockchain cannot inspect physical goods.
-- Asset issuer/token contract: an external trust assumption. The token contract's identity is immutable for the SoroBond deployment and must be validated and reviewed before production use. Admin controls, clawback and contract upgrades are external risks.
-- Ledger time: `Env::ledger().timestamp()` determines bounded expiry. Off-chain clocks do not control settlement.
+- **Seller:** funds the exact bond from the configured token contract and separately approves its immutable offer.
+- **Buyer:** independently approves the same offer, may submit one claim on time, and co-authorizes any settlement.
+- **Arbitrator:** immutable negotiated identity but **cannot currently resolve disputes**. The independent arbitration/timeout pathway is not implemented in issues #5–#8.
+- **Token:** one constructor-pinned contract; admin controls and clawback remain risks. No fee-on-transfer or rebasing token support.
+- **Ledger:** timestamp is authoritative; offer validity is 24 hours, and warranty duration is 1 hour to 90 days, counted from activation.
 
-## Planned lifecycle
-
-1. Buyer and seller agree off-chain on a private sales description and objective warranty terms; store only a 32-byte hash on-chain.
-2. Seller signs deposit transaction: program checks distinct parties, positive bond, 1-hour to 90-day duration, and overflow-safe deadline; locks exact asset from seller into contract.
-3. Versioned record is stored; `WarrantyCreated` event is emitted after transfer succeeds. `locked_total` is increased by exact deposit.
-4. **Future PR:** buyer files an eligible claim before expiry. **Future PR:** signed mutual settlement or predetermined arbitrator decision. **Future PR:** funds released once to the buyer or seller. These paths are not available yet.
+## Contract lifecycle
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Active: seller authorizes exact token deposit (implemented)
-  Active --> Claimed: eligible claim (future)
-  Active --> Returned: expire and return (future)
-  Claimed --> Resolved: accepted arbitration (future)
-  Resolved --> Paid: distribute bond (future)
+  [*] --> Pending: seller locks exact bond
+  Pending --> Pending: seller and buyer independently approve
+  Pending --> Active: both approvals + fully funded + on-time activate
+  Active --> Claimed: buyer makes one timely bounded claim
+  Claimed --> Settled: buyer and seller co-authorize exact payout
 ```
 
-All state transitions except the initial `Active` deposit are future work. This preliminary state model is not a guarantee of insurance, compensation or buyer protection.
+The claim deadline is **inclusive**. No automatic release exists at expiry, and no seller withdrawal exists during a disputed claim. The `Settled` state and total locked-balance debit are terminal and atomic with the token payouts. Zero or partial buyer payout is permitted with both parties' signatures, and the remaining bond is returned to seller. No fees are charged.
 
-## Storage and constraints
+## Data model
 
-- Warranty fields: `version = 1`, monotonic `id`, `seller`, `buyer`, `arbitrator`, `token`, `bond_amount`, `created_at`, `expires_at`, `terms_hash`, `status = Active`.
-- `token` is a single immutable constructor-injected asset contract; the address is the full asset identity, avoiding code-only ambiguity.
-- `bond_amount` must be positive i128; `locked_total` uses checked addition; each deposit transfers exact balance difference and cannot reuse an id.
-- `Depositing` guard blocks reentrant deposits; any failing token call rolls back the entire Soroban transaction.
-- Contract data TTL is not yet extended for long-term storage: ledger archival/restoration must be completed and tested before public use. Do not assume a 90-day bond remains accessible without an explicit TTL strategy.
+`Warranty` persists its original seller, buyer, arbitrator, token, bond amount, terms hash and creation timestamp along with `offer_expires_at`, `duration_seconds`, `activated_at`, `expires_at`, both approval flags and lifecycle status. `Claim` persists the amount, evidence hash and submission timestamp under the warranty id. Only hashes, not sensitive item descriptions, are stored on-chain.
 
-## Verification
+Each `approve` signature is based on Soroban's contract/network-scoped invocation authorization. Stored terms are never mutable. `locked_total` includes all funded Pending, Active and Claimed bonds and decreases only after a successful mutually authorized full settlement. Token transfer deltas verify exact receipt and debit.
 
-Native tests use the Soroban SDK test environment and a real local Stellar Asset Contract. They check exact balances, monotonic IDs, versioned data, invalid terms, zero/failing deposits and seller authentication. Tests do not represent testnet or mainnet funds. Use `cargo test` in `contracts/`; Wasm builds require `stellar contract build` and a suitable CLI/toolchain.
+## Important deployment blockers
+
+No refund path for an unclaimed expired warranty or abandoned offer; no adjudicator-authorized claim resolution; no TTL extension/restoration; no external security audit; no real network validation. A frozen bond without a willing counterparty can remain inaccessible. **Never use real funds with this draft contract.** See [Lifecycle security](lifecycle-security.md) and [Threat model](threat-model.md).
