@@ -40,3 +40,9 @@ cargo clippy --all-targets -- -D warnings
 The test suite covers missing and mismatched approvals, offer expiry, underfunding, idempotent activation, buyer-only claims, exact deadline behavior, duplicate/over-limit claims, partial/zero payout, payout caps, repeated settlement and token transfer failure rollback. Check the **actual GitHub Actions CI result** after opening a PR; do not infer a pass before it runs.
 
 Do not deploy or deposit valuable assets before expiry and dispute exit paths, TTL restoration, independent audit, adversarial token testing and real testnet verification.
+
+## Additional exits and arbitration (#9–#12)
+
+A Claimed warranty can end either through the existing jointly authorized `settle(id, payout)` call or through `arbitrate(id, payout)` authenticated by the *immutable arbitrator* selected at offer creation. An arbitration payout is bound to `0 <= payout <= stored claim amount`; the remainder of the same bond returns to the seller. Neither arbitrator nor user can choose another token or destination.
+
+The seller may call `withdraw_expired(id)` only for an unclaimed Active warranty when ledger timestamp is strictly later than `expires_at + 86400`. At equality it fails, and a claim filed exactly at `expires_at` permanently closes this seller-only exit. The claimant and original seller cannot double-spend across any terminal paths. Shared accounting checks token identity, checked liabilities, vault balance and exact transfers atomically. Pending offers still have no cancellation path; archival/TTL and lost arbitrator failure remain significant blockers. See [state invariants](testing/state-invariants.md).

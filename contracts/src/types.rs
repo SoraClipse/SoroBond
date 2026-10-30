@@ -38,6 +38,7 @@ pub enum WarrantyStatus {
     Active,
     Claimed,
     Settled,
+    Expired,
 }
 
 #[contracttype]
@@ -54,6 +55,7 @@ pub enum DataKey {
 pub const MIN_DURATION: u64 = 60 * 60;
 pub const MAX_DURATION: u64 = 90 * 24 * 60 * 60;
 pub const OFFER_VALIDITY: u64 = 24 * 60 * 60;
+pub const EXPIRY_GRACE: u64 = 24 * 60 * 60;
 
 pub fn validate_terms(
     seller: &Address,

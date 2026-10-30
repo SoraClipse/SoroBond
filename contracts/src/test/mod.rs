@@ -5,8 +5,12 @@ use soroban_sdk::{
 };
 
 mod agreement;
+mod arbitration;
 mod claim;
+mod expiry;
 mod lifecycle;
+mod properties;
+mod security;
 mod settlement;
 
 fn fixture() -> (Env, Address, Address, Address, Address, Address) {

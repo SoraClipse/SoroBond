@@ -1,7 +1,12 @@
 #![no_std]
+// Preserve the reviewed, versioned Soroban approve ABI (and its generated client signatures).
+#![allow(clippy::too_many_arguments)]
 mod agreement;
+mod arbitration;
 mod claim;
+mod expiry;
 mod lifecycle;
+mod security;
 mod settlement;
 mod types;
 mod vault;
@@ -191,6 +196,16 @@ impl SoroBond {
     /// Both buyer and seller must authorize the identical payout in one invocation.
     pub fn settle(env: Env, id: u64, buyer_payout: i128) {
         settlement::settle(&env, id, buyer_payout);
+    }
+
+    /// The mutually preselected independent resolver alone may finalize a submitted claim.
+    pub fn arbitrate(env: Env, id: u64, buyer_payout: i128) {
+        arbitration::arbitrate(&env, id, buyer_payout);
+    }
+
+    /// Seller-only refund when a warranty was not claimed before expiry + grace.
+    pub fn withdraw_expired(env: Env, id: u64) {
+        expiry::withdraw_expired(&env, id);
     }
 }
 
