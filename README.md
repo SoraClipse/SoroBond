@@ -55,3 +55,13 @@ No `cancel_offer` or emergency rescue endpoint exists; a never-activated Pending
 ## License
 
 Apache-2.0. Independent work, not endorsed by the SDF or Drips.
+
+
+## Funding and claim dashboard (Issues #17–#18)
+
+The experimental static web routes /warranties/fund and /warranties/claims expose seller collateral preflight, on-chain confirmed bond status, buyer claim submission, encrypted evidence upload, mutually authorized settlement, resolver decision and seller expiry withdrawal. Run node apps/api/src/web-server.mjs (Node 22.16+) and use a trusted wallet, Soroban RPC, on-chain contract reader and client-side-encrypted evidence provider. No adapter is configured by default, so transaction actions fail closed. **No production-ready deployment is claimed.**
+
+New tests run with node --test apps/web/tests/*.test.mjs tests/e2e/*.test.mjs. The live Testnet evidence test skips until actual manifest and audited receipt decoder are provided.
+
+**Issue #19 not yet proven:** see docs/verification/testnet.md for required real deploy, signed transactions, expiry waiting period, negative transactions and proof collection. Mocked receipts and unit tests are not sufficient. See docs/issues-17-19.md for integration APIs and limitations.
+

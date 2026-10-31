@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '22.16.0'
       - name: JS tests
-        run: node --test packages/sdk/test/*.test.mjs apps/api/test/*.test.mjs apps/web/tests/*.test.mjs
+        run: node --test packages/sdk/test/*.test.mjs apps/api/test/*.test.mjs apps/web/tests/*.test.mjs tests/e2e/*.test.mjs
       - name: Format
         working-directory: contracts
         run: cargo fmt --check
