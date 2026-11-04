@@ -6,6 +6,7 @@ mod arbitration;
 mod claim;
 mod expiry;
 mod lifecycle;
+mod pending_offer;
 mod security;
 mod settlement;
 mod types;
@@ -201,6 +202,12 @@ impl SoroBond {
     /// The mutually preselected independent resolver alone may finalize a submitted claim.
     pub fn arbitrate(env: Env, id: u64, buyer_payout: i128) {
         arbitration::arbitrate(&env, id, buyer_payout);
+    }
+
+    /// Seller rescues a funded pending offer before buyer approval or after its deadline.
+    /// This cannot cancel an active, claimed, or finalized warranty.
+    pub fn cancel_offer(env: Env, id: u64) {
+        pending_offer::cancel_offer(&env, id);
     }
 
     /// Seller-only refund when a warranty was not claimed before expiry + grace.
