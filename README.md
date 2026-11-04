@@ -65,3 +65,32 @@ New tests run with node --test apps/web/tests/*.test.mjs tests/e2e/*.test.mjs. T
 
 **Issue #19 not yet proven:** see docs/verification/testnet.md for required real deploy, signed transactions, expiry waiting period, negative transactions and proof collection. Mocked receipts and unit tests are not sufficient. See docs/issues-17-19.md for integration APIs and limitations.
 
+## Verification, deployment and risk disclosures (#19–#21)
+
+**Testnet verification is still pending.** The repository includes an
+opt-in manifest verifier and extra negative tests, but does **not** contain a
+verified contract deployment, 13 genuine Testnet transaction receipts, a
+reviewed Soroban event reader, or a completed end-to-end lifecycle.
+
+- [Fresh-clone build and Testnet deployment playbook](docs/operations/deploy.md)
+- [Actual Testnet lifecycle verification steps](docs/verification/testnet.md)
+- [Live-evidence acceptance checklist and open blockers](docs/verification/acceptance.md)
+
+The source layout is Rust/Cargo plus native Node ESM JavaScript, **not** a
+pnpm or TypeScript workspace. Use `bash scripts/verify.sh` to run the local
+Rust/Node test, syntax, documentation-link, format and Clippy checks. GitHub
+Actions additionally attempts the supported `stellar contract build` Wasm
+build; a green action run must be linked before CI acceptance is claimed.
+
+**For buyers:** a bond is not insurance, a refund guarantee or proof of a
+physical item's condition. A biased or missing resolver may make a dispute
+unfair or permanently block settlement. **For sellers:** creating an offer
+locks the deposited test collateral even before buyer approval; no
+pending-offer cancellation or emergency rescue is implemented. An unclaimed
+warranty's release requires expiry plus a 24-hour grace period. Both parties
+must authorize identical mutual settlement terms, or the preselected resolver
+may arbitrate within the claim amount. No legal, financial, merchant or
+consumer-protection certification, audit or public-mainnet safety claim exists.
+
+Do not fund a contract with money or tokens of real value. Never place secret
+wallet keys in GitHub Actions, a PR or a bug report.

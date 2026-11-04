@@ -5,26 +5,41 @@ on:
     branches: [main, 'feat/**']
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  javascript:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22.16.0'
-      - name: JS tests
-        run: node --test packages/sdk/test/*.test.mjs apps/api/test/*.test.mjs apps/web/tests/*.test.mjs tests/e2e/*.test.mjs
-      - name: Format
-        working-directory: contracts
-        run: cargo fmt --check
-      - name: Unit tests
-        working-directory: contracts
-        run: cargo test
-      - name: Clippy
-        working-directory: contracts
-        run: cargo clippy --all-targets -- -D warnings
+      - name: Node syntax, offline tests and documentation links
+        run: bash scripts/verify.sh js
+
+  rust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32v1-none
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts
+      - name: Rust formatting, tests and Clippy
+        run: bash scripts/verify.sh rust
+      - name: Install Stellar CLI for supported contract build
+        run: cargo install --locked stellar-cli
+      - name: Compile actual Soroban Wasm using Stellar CLI
+        run: stellar contract build --manifest-path contracts/Cargo.toml
